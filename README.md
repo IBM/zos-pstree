@@ -1,2 +1,11 @@
-# zos-pstree
-pstree command for zos implemented in Go, display processes in tree form.
+List visible processes in tree form
+
+To build
+```
+go build -o pstree
+```
+
+To run
+```
+./pstree
+```
