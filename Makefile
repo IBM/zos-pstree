@@ -1,4 +1,6 @@
-all: pstree
+BINS:=pstree
+
+all: $(BINS)
 
 ME:=$(firstword $(MAKEFILE_LIST))
 
