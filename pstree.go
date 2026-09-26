@@ -163,6 +163,9 @@ func boxString(in []byte) (out string) {
 
 func doPrint(pidmap PidMap, pid int32, depth int, boxes []byte) string {
 	buffer := new(bytes.Buffer)
+	if pidmap[pid] == nil {
+		return ""
+	}
 	if pid != 1 {
 		fmt.Fprintf(buffer, "%s(%v) %v\n", boxString(boxes[:depth*2]), pid, pidmap[pid].Cmd)
 		if boxes[depth*2-2] != '|' {
@@ -171,6 +174,12 @@ func doPrint(pidmap PidMap, pid int32, depth int, boxes []byte) string {
 		boxes[depth*2-1] = ' '
 	}
 	z := len(pidmap[pid].Children)
+	if z > 0 && depth*2+1 >= len(boxes) {
+		// Pathologically deep tree: omit deeper levels instead of
+		// overflowing the shared prefix buffer.
+		fmt.Fprintf(buffer, "%s... [subtree omitted: process tree too deep]\n", boxString(boxes[:depth*2]))
+		return buffer.String()
+	}
 	for i, child := range pidmap[pid].Children {
 		if i == (z - 1) {
 			boxes[depth*2] = '+'
@@ -179,7 +188,7 @@ func doPrint(pidmap PidMap, pid int32, depth int, boxes []byte) string {
 			boxes[depth*2] = '|'
 			boxes[depth*2+1] = '-'
 		}
-		fmt.Fprintf(buffer, doPrint(pidmap, child, depth+1, boxes))
+		buffer.WriteString(doPrint(pidmap, child, depth+1, boxes))
 	}
 	return buffer.String()
 }
@@ -256,6 +265,8 @@ func main() {
 		var gthc *Pgthc
 		var gthf *Pgthf
 		if rv == 0 {
+			gthc = nil
+			gthf = nil
 			for i := 0; i < 5000; i += 4 {
 				tag := *(*uint32)(unsafe.Pointer(&outdata[i]))
 				switch {
@@ -266,7 +277,12 @@ func main() {
 					break
 				}
 			}
-			if uintptr(unsafe.Pointer(gthf)) != 0 && gthf.Len > 0 {
+			if gthc == nil || gthf == nil {
+				break
+			}
+			// Len comes from the system call; bound it by the
+			// destination buffer so a corrupt value can't panic the slice below.
+			if gthf.Len > 0 && int(gthf.Len) <= len(gthf.Command)+1 {
 				convCommand(gthf.Command[:gthf.Len-1])
 				outlines = append(outlines, Outline{gthc.Pid, gthc.Ppid, string(gthf.Command[:gthf.Len-1])})
 			}

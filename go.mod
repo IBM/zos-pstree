@@ -1,3 +1,3 @@
-go 1.21
+go 1.25
 
 module github.com/IBM/go-pstree
