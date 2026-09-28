@@ -26,6 +26,10 @@ or
 make
 ```
 
+`make` embeds the version via `-X main.version=...`, taken from
+`$ZOSPSTREE_VERSION` or else `git describe --tags --always --dirty`.
+A plain `go build` without `-ldflags` reports `dev`.
+
 ## Run
 
 ```
@@ -36,6 +40,13 @@ Use ASCII-only line drawing (for terminals without Unicode support):
 
 ```
 ./pstree -A
+```
+
+Print the embedded version:
+
+```
+./pstree -V
+./pstree -version
 ```
 
 ## Sample output
@@ -59,6 +70,11 @@ With `-A` the same tree renders with `|`, `+`, `-` characters.
   ASCII, builds a PID map, and prints the tree. Orphaned processes
   (parent not visible) are attached to a synthetic `--root--` node.
 - Only processes visible to the caller's UID are listed.
+
+## Downstream
+
+Packaged port: [zopencommunity/zospstreeport](https://github.com/zopencommunity/zospstreeport) —
+tracks this repo's releases via a `ZOSPSTREE_VERSION` bump.
 
 ## Security notes
 

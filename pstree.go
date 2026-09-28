@@ -133,6 +133,11 @@ func process(outlines []Outline) {
 
 var asciiBox bool
 
+// version defaults to "dev" and is overridden at build time via:
+//   go build -ldflags "-X main.version=..."
+// See Makefile (ZOSPSTREE_VERSION, with git describe / dev-<timestamp> fallback).
+var version = "dev"
+
 func boxString(in []byte) (out string) {
 	if asciiBox {
 		out = string(in)
@@ -225,7 +230,14 @@ func convCommand(in []byte) {
 
 func main() {
 	flag.BoolVar(&asciiBox, "A", false, "Use ASCII box characters")
+	var showVersion bool
+	flag.BoolVar(&showVersion, "V", false, "Print version and exit")
+	flag.BoolVar(&showVersion, "version", false, "Print version and exit")
 	flag.Parse()
+	if showVersion {
+		fmt.Println(version)
+		return
+	}
 	var indata Pgtha
 	var indata_len int32
 	var outdata [5000]byte
