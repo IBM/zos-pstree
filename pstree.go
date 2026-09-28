@@ -134,7 +134,9 @@ func process(outlines []Outline) {
 var asciiBox bool
 
 // version defaults to "dev" and is overridden at build time via:
-//   go build -ldflags "-X main.version=..."
+//
+//	go build -ldflags "-X main.version=..."
+//
 // See Makefile (ZOSPSTREE_VERSION, with git describe / dev-<timestamp> fallback).
 var version = "dev"
 
